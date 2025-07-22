@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouLearn</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <nav>
+    <div class="menu">
+      <div class="logo">
+        <a href="#"><span style="color:#1e90ff;">You</span><span style="color:black;">Learn</span></a>
+      </div>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#courses">Courses</a></li>
+        <li><a href="#" onclick="toggleLogin()">Sign In</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="img" id="home">
+    <div class="center">
+      <h1 class="titre">Welcome To YouLearn</h1>
+    </div>
+  </div>
+
+  <section class="section" id="courses">
+    <h2 class="section-title">Our Courses</h2>
+    <div class="content">
+      <form id="lessonForm" class="lesson-form">
+        <input type="text" id="title" placeholder="Lesson Title" required>
+        <input type="text" id="videoUrl" placeholder="Video URL (optional)">
+        
+        <div id="qcmContainer">
+          <div class="qcm-group">
+            <input type="text" placeholder="Question" class="qcm-question">
+            <input type="text" placeholder="Answer" class="qcm-answer">
+          </div>
+        </div>
+        
+        <button type="button" onclick="addQcm()">+ Add QCM</button>
+        <button type="submit">Add Lesson</button>
+      </form>
+
+      <div id="lessonsContainer" class="courses"></div>
+    </div>
+  </section>
+
+  <div class="login-popup" id="loginPopup">
+    <div class="login-box">
+      <span class="close" onclick="toggleLogin()">&times;</span>
+      <h2>Login</h2>
+      <input type="text" placeholder="Username">
+      <input type="password" placeholder="Password">
+      <div class="options">
+        <label><input type="checkbox"> Remember me</label>
+        <a href="#">Forgot?</a>
+      </div>
+      <button>Login</button>
+      <p>Don't have an account? <a href="#">Sign up</a></p>
+    </div>
+  </div>
+
+  <script>
+    function toggleLogin() {
+      const popup = document.getElementById("loginPopup");
+      popup.style.display = (popup.style.display === "flex") ? "none" : "flex";
+      popup.style.display === "flex" && (popup.style.alignItems = "center");
+    }
+
+    function addQcm() {
+      const container = document.getElementById("qcmContainer");
+      const group = document.createElement("div");
+      group.className = "qcm-group";
+      group.innerHTML = `
+        <input type="text" placeholder="Question" class="qcm-question">
+        <input type="text" placeholder="Answer" class="qcm-answer">
+      `;
+      container.appendChild(group);
+    }
+
+    function deleteLesson(id) {
+      document.querySelector([data-id="${id}"]).remove();
+    }
+
+    document.getElementById("lessonForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value;
+      const videoUrl = document.getElementById("videoUrl").value;
+      const questions = document.querySelectorAll(".qcm-question");
+      const answers = document.querySelectorAll(".qcm-answer");
+
+      const qcms = [];
+      for (let i = 0; i < questions.length; i++) {
+        const question = questions[i].value;
+        const answer = answers[i].value;
+        if (question && answer) {
+          qcms.push({ question, answer });
+        }
+      }
+
+      const lesson = {
+        id: Date.now(),
+        title,
+        videoUrl,
+        qcms
+      };
+
+      addLessonToDOM(lesson);
+      this.reset();
+      document.getElementById("qcmContainer").innerHTML = `
+        <div class="qcm-group">
+          <input type="text" placeholder="Question" class="qcm-question">
+          <input type="text" placeholder="Answer" class="qcm-answer">
+        </div>
+      `;
+    });
+
+    function addLessonToDOM(lesson) {
+      const container = document.getElementById("lessonsContainer");
+      const card = document.createElement("div");
+      card.className = "card";
+      card.setAttribute("data-id", lesson.id);
+
+      let html = <h3>${lesson.title}</h3>;
+      if (lesson.videoUrl) {
+        html += <video controls src="${lesson.videoUrl}" width="100%"></video>;
+      }
+      if (lesson.qcms.length) {
+        html += <ul>;
+        lesson.qcms.forEach(qcm => {
+          html += <li><strong>Q:</strong> ${qcm.question} <strong>A:</strong> ${qcm.answer}</li>;
+        });
+        html += </ul>;
+      }
+      html += <button class="delete-btn" onclick="deleteLesson(${lesson.id})">🗑 Delete</button>;
+      
+      card.innerHTML = html;
+      container.appendChild(card);
+    }
+  </script>
+
+</body>
+</html>
